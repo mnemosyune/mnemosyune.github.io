@@ -11,7 +11,7 @@
   
   <title>
     
-      nginx负载均衡实现根据不同终端显示不同页面 
+      nginx实现根据用户访问uri信息实现负载均衡 
       
       
       |
@@ -153,11 +153,11 @@
   <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
   <div class="container post-details" id="post-details">
     <div class="post-content">
-      <div class="post-title">nginx负载均衡实现根据不同终端显示不同页面</div>
+      <div class="post-title">nginx实现根据用户访问uri信息实现负载均衡</div>
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-          2022-10-28 16:48:46
+          2022-10-28 17:04:23
         </span>
         
               <span class="post-tags">
@@ -173,10 +173,10 @@
           
       </div>
       <div class="markdown-body">
-        <h3 id="定义服务器集群"><a href="#定义服务器集群" class="headerlink" title="定义服务器集群"></a>定义服务器集群</h3><p>192.168.83.7:80 mobile移动端集群</p>
-<p>192.168.83.8:80 web端集群</p>
-<p>192.168.83.9:80 default端集群</p>
-<h3 id="编写配置文件"><a href="#编写配置文件" class="headerlink" title="编写配置文件"></a>编写配置文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">upstream web &#123;</span><br><span class="line"> server 192.168.83.8:80;</span><br><span class="line">&#125;</span><br><span class="line">upstream mobile &#123;</span><br><span class="line"> server 192.168.83.7:80;</span><br><span class="line">&#125;</span><br><span class="line">upstream default &#123;</span><br><span class="line"> server 192.168.83.9:80;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  listen    80;</span><br><span class="line">  server_name [www.test.com](http://www.test.com);</span><br><span class="line">  location / &#123;</span><br><span class="line">   if ($http_user_agent ~* iphone) &#123;</span><br><span class="line">​    proxy_pass http://mobile;</span><br><span class="line">   &#125;</span><br><span class="line">   if ($http_user_agent ~* Chrome) &#123;</span><br><span class="line">​    proxy_pass http://web;</span><br><span class="line">   &#125;</span><br><span class="line">   proxy_pass http://default;</span><br><span class="line">   proxy_set_header Host $host;</span><br><span class="line">   proxy_set_header X-Forwarded-For $remote_addr;</span><br><span class="line">   proxy_next_upstream error timeout http_404 http_502 http_503;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h3 id="定义服务器集群"><a href="#定义服务器集群" class="headerlink" title="定义服务器集群"></a>定义服务器集群</h3><p>&#x2F;upload     集群-192.168.83.8:80    &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;upload      upload服务器集群</p>
+<p>&#x2F;static       集群-192.168.83.7:80    &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;static         static服务器集群</p>
+<p>&#x2F;               集群-192.168.83.9:80    &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html                   default服务器集群</p>
+<h3 id="编写配置文件"><a href="#编写配置文件" class="headerlink" title="编写配置文件"></a>编写配置文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">upstream upload &#123;</span><br><span class="line">  server 192.168.83.8:80; </span><br><span class="line">&#125;</span><br><span class="line">upstream static &#123;</span><br><span class="line">  server 192.168.83.7:80; </span><br><span class="line">&#125;</span><br><span class="line">upstream default &#123;</span><br><span class="line">  server 192.168.83.9:80; </span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    server_name  www.test.com;</span><br><span class="line">    location / &#123;</span><br><span class="line">      proxy_pass http://default;</span><br><span class="line">      proxy_set_header Host $host;</span><br><span class="line">      proxy_set_header X-Forwarded-For $remote_addr;</span><br><span class="line">      proxy_next_upstream error timeout http_404 http_502 http_503;</span><br><span class="line">    &#125;</span><br><span class="line">    location /upload &#123;</span><br><span class="line">      proxy_pass http://upload;</span><br><span class="line">      proxy_set_header Host $host;</span><br><span class="line">      proxy_set_header X-Forwarded-For $remote_addr;</span><br><span class="line">      proxy_next_upstream error timeout http_404 http_502 http_503;</span><br><span class="line">    &#125;</span><br><span class="line">    location /static &#123;</span><br><span class="line">      proxy_pass http://static;</span><br><span class="line">      proxy_set_header Host $host;</span><br><span class="line">      proxy_set_header X-Forwarded-For $remote_addr;</span><br><span class="line">      proxy_next_upstream error timeout http_404 http_502 http_503;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 
       </div>
@@ -184,7 +184,7 @@
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2022/09/03/nginx%E4%B9%8Bip-hash/" target="_self">
+              <a href="/2022/10/28/nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%90%8C%E9%A1%B5%E9%9D%A2/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>上一页</span>
               </a>
@@ -193,7 +193,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-              2022-10-28 16:48:46
+              2022-10-28 17:04:23
             </span>
             
                   <span class="post-tags">
@@ -209,11 +209,6 @@
               
           </div>
           <div class="post-foot-prev">
-            
-              <a href="/2022/10/28/nginx%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E7%94%A8%E6%88%B7%E8%AE%BF%E9%97%AEuri%E4%BF%A1%E6%81%AF%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" target="_self">
-                <span>下一页</span>
-                <i class="iconfont icon-chevronright"></i>
-              </a>
             
           </div>
         </div>
@@ -336,12 +331,12 @@
       </a>
       <div class="share-content hidden">
         
-          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%90%8C%E9%A1%B5%E9%9D%A2 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F10%2F28%2Fnginx%25E8%25B4%259F%25E8%25BD%25BD%25E5%259D%2587%25E8%25A1%25A1%25E5%25AE%259E%25E7%258E%25B0%25E6%25A0%25B9%25E6%258D%25AE%25E4%25B8%258D%25E5%2590%258C%25E7%25BB%2588%25E7%25AB%25AF%25E6%2598%25BE%25E7%25A4%25BA%25E4%25B8%258D%25E5%2590%258C%25E9%25A1%25B5%25E9%259D%25A2%2F + '" target="_blank" title="Twitter">
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + nginx%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E7%94%A8%E6%88%B7%E8%AE%BF%E9%97%AEuri%E4%BF%A1%E6%81%AF%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F10%2F28%2Fnginx%25E5%25AE%259E%25E7%258E%25B0%25E6%25A0%25B9%25E6%258D%25AE%25E7%2594%25A8%25E6%2588%25B7%25E8%25AE%25BF%25E9%2597%25AEuri%25E4%25BF%25A1%25E6%2581%25AF%25E5%25AE%259E%25E7%258E%25B0%25E8%25B4%259F%25E8%25BD%25BD%25E5%259D%2587%25E8%25A1%25A1%2F + '" target="_blank" title="Twitter">
             <i class="iconfont icon-twitter"></i>
           </a>
         
         
-          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/10/28/nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%90%8C%E9%A1%B5%E9%9D%A2/" target="_blank" title="Facebook">
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/10/28/nginx%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E7%94%A8%E6%88%B7%E8%AE%BF%E9%97%AEuri%E4%BF%A1%E6%81%AF%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" target="_blank" title="Facebook">
             <i class="iconfont icon-facebooksquare"></i>
           </a>
         
