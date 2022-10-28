@@ -11,7 +11,7 @@
   
   <title>
     
-      nginx之ip_hash 
+      nginx负载均衡实现根据不同终端显示不同页面 
       
       
       |
@@ -153,11 +153,11 @@
   <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
   <div class="container post-details" id="post-details">
     <div class="post-content">
-      <div class="post-title">nginx之ip_hash</div>
+      <div class="post-title">nginx负载均衡实现根据不同终端显示不同页面</div>
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-          2022-09-03 12:39:57
+          2022-10-28 16:48:46
         </span>
         
               <span class="post-tags">
@@ -173,17 +173,18 @@
           
       </div>
       <div class="markdown-body">
-        <p>当用户登录网站时，用户的用户名密码只会保存到web集群服务器中的一台服务器，但是当用户再次发送请求时，由于轮询或者权重的设置，其他的web服务器并没有保存的用户名和密码的记录，所以还需要再次登录，这样就会卡在登录界面。</p>
-<p>解决这个问题的方法有两种：第一可以配置ip hash参数；第二可以将用户名和密码保存到后端的缓存服务器上（需用到memcache服务）。</p>
-<p>这里只讨论ip_hash。假设有一个用户第一次访问过该网站（该网站由三台web服务器组成web集群，还有一台负载服务器），负载服务器会使用ip_hash把用户的源ip地址生成hash值，然后根据后端节点和访问用户的数量分类hash值，再生成相应的hash池。比如hash值的范围是1000-4000，那么就可以把1000-2000范围的hash值生成一个hash池分配给其中一台web服务器，以此类推，2001-3000分给第二台，3001-4000分给第三台。也就是说，只要用户的源地址没有改变，访问请求每次都只发送给有与源地址对应的hash池的web服务器。</p>
-<p>但ip_hash是有问题的。因为ip_hash只识别公网地址，而NAT会把大量的私网地址转换成一个公网地址，这样导致的结果就是web集群的负载变得不均衡。</p>
+        <h3 id="定义服务器集群"><a href="#定义服务器集群" class="headerlink" title="定义服务器集群"></a>定义服务器集群</h3><p>192.168.83.7:80 mobile移动端集群</p>
+<p>192.168.83.8:80 web端集群</p>
+<p>192.168.83.9:80 default端集群</p>
+<h3 id="编写配置文件"><a href="#编写配置文件" class="headerlink" title="编写配置文件"></a>编写配置文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">upstream web &#123;</span><br><span class="line"> server 192.168.83.8:80;</span><br><span class="line">&#125;</span><br><span class="line">upstream mobile &#123;</span><br><span class="line"> server 192.168.83.7:80;</span><br><span class="line">&#125;</span><br><span class="line">upstream default &#123;</span><br><span class="line"> server 192.168.83.9:80;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  listen    80;</span><br><span class="line">  server_name [www.test.com](http://www.test.com);</span><br><span class="line">  location / &#123;</span><br><span class="line">   if ($http_user_agent ~* iphone) &#123;</span><br><span class="line">​    proxy_pass http://mobile;</span><br><span class="line">   &#125;</span><br><span class="line">   if ($http_user_agent ~* Chrome) &#123;</span><br><span class="line">​    proxy_pass http://web;</span><br><span class="line">   &#125;</span><br><span class="line">   proxy_pass http://default;</span><br><span class="line">   proxy_set_header Host $host;</span><br><span class="line">   proxy_set_header X-Forwarded-For $remote_addr;</span><br><span class="line">   proxy_next_upstream error timeout http_404 http_502 http_503;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 
       </div>
       
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2022/09/01/hello-world/" target="_self">
+              <a href="/2022/09/03/nginx%E4%B9%8Bip-hash/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>上一页</span>
               </a>
@@ -192,7 +193,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-              2022-09-03 12:39:57
+              2022-10-28 16:48:46
             </span>
             
                   <span class="post-tags">
@@ -209,16 +210,28 @@
           </div>
           <div class="post-foot-prev">
             
-              <a href="/2022/10/28/nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%90%8C%E9%A1%B5%E9%9D%A2/" target="_self">
-                <span>下一页</span>
-                <i class="iconfont icon-chevronright"></i>
-              </a>
-            
           </div>
         </div>
       
     </div>
     
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%9B%86%E7%BE%A4"><span class="toc-text">定义服务器集群</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-text">编写配置文件</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
 
     
       <div class="comments-container">
@@ -318,12 +331,12 @@
       </a>
       <div class="share-content hidden">
         
-          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + nginx%E4%B9%8Bip_hash + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F09%2F03%2Fnginx%25E4%25B9%258Bip-hash%2F + '" target="_blank" title="Twitter">
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%90%8C%E9%A1%B5%E9%9D%A2 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F10%2F28%2Fnginx%25E8%25B4%259F%25E8%25BD%25BD%25E5%259D%2587%25E8%25A1%25A1%25E5%25AE%259E%25E7%258E%25B0%25E6%25A0%25B9%25E6%258D%25AE%25E4%25B8%258D%25E5%2590%258C%25E7%25BB%2588%25E7%25AB%25AF%25E6%2598%25BE%25E7%25A4%25BA%25E4%25B8%258D%25E5%2590%258C%25E9%25A1%25B5%25E9%259D%25A2%2F + '" target="_blank" title="Twitter">
             <i class="iconfont icon-twitter"></i>
           </a>
         
         
-          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/09/03/nginx%E4%B9%8Bip-hash/" target="_blank" title="Facebook">
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/10/28/nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%90%8C%E9%A1%B5%E9%9D%A2/" target="_blank" title="Facebook">
             <i class="iconfont icon-facebooksquare"></i>
           </a>
         
